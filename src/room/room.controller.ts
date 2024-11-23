@@ -32,7 +32,7 @@ export class RoomController {
   async getVideoRoom(@Param('id') id: string) {
     try {
       const videos = await this.roomService.getAllVideoByRoomId(id);
-      if (!videos) {
+      if (!videos || videos.length === 0) {
         return { message: 'Videos not found for the specified room' };
       }
       return { message: 'Videos retrieved successfully', videos };
