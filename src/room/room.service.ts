@@ -6,38 +6,62 @@ import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class RoomService {
-  constructor(
-    @InjectModel(Room.name) private channelModel: Model<RoomDocument>,
-  ) {}
+  constructor(@InjectModel(Room.name) private RoomModel: Model<RoomDocument>) {}
 
   async create(createRoomDto: CreateRoomDto): Promise<RoomDocument> {
-    const newRoom = new this.channelModel(createRoomDto);
+    const newRoom = new this.RoomModel(createRoomDto);
     return await newRoom.save();
   }
 
   async findAll(): Promise<RoomDocument[]> {
-    return this.channelModel
-      .find()
+    return this.RoomModel.find()
       .populate('participants')
       .populate('owner')
       .exec();
-  }
-
-  async findOneById(id: string): Promise<RoomDocument> {
-    return this.channelModel.findById(id).exec();
   }
 
   async updateById(
     id: string,
     updateRoomDto: CreateRoomDto,
   ): Promise<RoomDocument> {
-    return this.channelModel
-      .findByIdAndUpdate(id, updateRoomDto, { new: true })
-      .exec();
+    return this.RoomModel.findByIdAndUpdate(id, updateRoomDto, {
+      new: true,
+    }).exec();
   }
 
   async getAllVideoByRoomId(roomId: string): Promise<any[]> {
-    const room = await this.channelModel.findById(roomId).exec();
+    const room = await this.RoomModel.findById(roomId).exec();
     return room ? room.videos : [];
+  }
+
+  async getVideosByRoomId(
+    roomId: string,
+  ): Promise<{ title: string; url: string }[]> {
+    const room = await this.RoomModel.findById(roomId)
+      .populate('participants', '_id')
+      .exec();
+
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    return room.videos;
+  }
+  async findOneById(roomId: string): Promise<Room> {
+    const room = this.RoomModel.findById(roomId).exec();
+    console.log(room);
+    return room;
+  }
+
+  async getRoomByIdParticipants(roomId: string): Promise<any[]> {
+    const room = await this.RoomModel.findById(roomId)
+      .populate('participants', 'username email')
+      .exec();
+
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    return room.participants;
   }
 }
