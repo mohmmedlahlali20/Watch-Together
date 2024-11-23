@@ -16,7 +16,7 @@ export class RoomService {
   }
 
   async findAll(): Promise<RoomDocument[]> {
-    return await this.channelModel
+    return this.channelModel
       .find()
       .populate('participants')
       .populate('owner')
@@ -24,25 +24,20 @@ export class RoomService {
   }
 
   async findOneById(id: string): Promise<RoomDocument> {
-    return await this.channelModel.findById(id).exec();
+    return this.channelModel.findById(id).exec();
   }
 
   async updateById(
     id: string,
     updateRoomDto: CreateRoomDto,
   ): Promise<RoomDocument> {
-    return await this.channelModel
+    return this.channelModel
       .findByIdAndUpdate(id, updateRoomDto, { new: true })
       .exec();
   }
 
-  async getAllVideoByRoomId(
-    roomId: string,
-  ): Promise<{ title: string; url: string }[]> {
+  async getAllVideoByRoomId(roomId: string): Promise<any[]> {
     const room = await this.channelModel.findById(roomId).exec();
-    if (!room) {
-      throw new Error('Room not found');
-    }
-    return room.videos;
+    return room ? room.videos : [];
   }
 }
